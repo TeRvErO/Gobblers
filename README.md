@@ -1,7 +1,7 @@
 # Gobblers
 
 ## Requirements
-1. Have GOO and GOBBLERs on the same dao address
+1. Have GOO (ERC20) and GOBBLERs on the same dao address
 1. Dao approve GOO for MintLegendary contract
 2. Dao set approval for all GOBBLERs for MintLegendary contract
 
