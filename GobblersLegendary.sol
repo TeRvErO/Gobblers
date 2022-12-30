@@ -27,6 +27,20 @@ interface IGobblers {
     function transferFrom(address, address, uint256) external;
     function setApprovalForAll(address operator, bool _approved) external;
     function balanceOf(address) external view returns (uint);
+    function mintStart() external view returns (uint256);
+    function numMintedFromGoo() external view returns (uint256);
+    function getVRGDAPrice(int256 timeSinceStart, uint256 sold) external view returns (uint256);
+}
+
+/// @dev Takes an integer amount of seconds and converts it to a wad amount of days.
+/// @dev Will not revert on overflow, only use where overflow is not possible.
+/// @dev Not meant for negative second amounts, it assumes x is positive.
+function toDaysWadUnsafe(uint256 x) pure returns (int256 r) {
+    /// @solidity memory-safe-assembly
+    assembly {
+        // Multiply x by 1e18 and then divide it by 86400.
+        r := div(mul(x, 1000000000000000000), 86400)
+    }
 }
 
 contract Owned {
@@ -52,16 +66,12 @@ contract MintLegendary is Owned, ERC721TokenReceiver {
         dao = _dao;
     }
 
-    // @notice Update legendary price to reuse this contract
-    function updateNextLegendaryPrice(uint256 price) public onlyOwner {
-        nextLegendaryPrice = price;
-    }
-
     // @notice Mint legendary Gobbler NFT by burning gobblers
     // @param amountGobblers The amount of Gobblers to mint from all available GOO
     // @param gobblerIds Ids of Gobblers to be burned
     function mint(uint256 amountGobblers, uint256[] calldata gobblerIds) public {
         require(gobblerIds.length == nextLegendaryPrice, "Unsufficient gobblers");
+        require(costGoo(amountGobblers) <= goo.balanceOf(dao), "Unsufficient GOO");
         uint256 startingBalance = gobblers.balanceOf(dao);
         // =================================
         // Transfer GOO and NFTs to this contract
@@ -90,6 +100,19 @@ contract MintLegendary is Owned, ERC721TokenReceiver {
             gobblers.transferFrom(address(this), dao, newGobblers[i]);
         // final check
         require(gobblers.balanceOf(dao) == startingBalance - nextLegendaryPrice + newGobblers.length + 1, "Something wrong");
+    }
+
+    // @notice Update legendary price to reuse this contract
+    function updateNextLegendaryPrice(uint256 price) public onlyOwner {
+        nextLegendaryPrice = price;
+    }
+
+    // @notice Get GOO cost of minting amountGobblers
+    // @param amountGobblers The amount of Gobblers
+    function costGoo(uint256 amountGobblers) public view returns (uint256 cost) {
+        uint256 timeSinceStart = block.timestamp - gobblers.mintStart();
+        for (uint8 i = 0; i < amountGobblers; ++i)
+            cost += gobblers.getVRGDAPrice(toDaysWadUnsafe(timeSinceStart), gobblers.numMintedFromGoo() + i);
     }
 
     // @notice Withdraw ERC721/ERC20 tokens by owner. For ERC20 tokenId is amount to withdraw
