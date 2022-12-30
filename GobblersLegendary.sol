@@ -21,6 +21,10 @@ interface IERC20 {
 }
 
 interface IGobblers {
+    struct LegendaryGobblerAuctionData {
+        uint128 startPrice;
+        uint128 numSold;
+    }
     function mintFromGoo(uint256 maxPrice, bool useVirtual) external returns (uint);
     function mintLegendaryGobbler(uint256[] calldata gobblerIds) external returns (uint);
     function gooBalance(address user) view external returns(uint256);
@@ -30,6 +34,8 @@ interface IGobblers {
     function mintStart() external view returns (uint256);
     function numMintedFromGoo() external view returns (uint256);
     function getVRGDAPrice(int256 timeSinceStart, uint256 sold) external view returns (uint256);
+    function legendaryGobblerAuctionData() external view returns(LegendaryGobblerAuctionData memory);
+    function LEGENDARY_AUCTION_INTERVAL() external view returns (uint256);
 }
 
 /// @dev Takes an integer amount of seconds and converts it to a wad amount of days.
@@ -72,7 +78,10 @@ contract MintLegendary is Owned, ERC721TokenReceiver {
     function mint(uint256 amountGobblers, uint256[] calldata gobblerIds) public {
         require(gobblerIds.length == nextLegendaryPrice, "Unsufficient gobblers");
         require(costGoo(amountGobblers) <= goo.balanceOf(dao), "Unsufficient GOO");
-        uint256 startingBalance = gobblers.balanceOf(dao);
+        uint256 nextNumMintedFromGoo = gobblers.numMintedFromGoo() + amountGobblers;
+        uint256 numTriggerLegendary = (gobblers.legendaryGobblerAuctionData().numSold + 1) * gobblers.LEGENDARY_AUCTION_INTERVAL();
+        require(nextNumMintedFromGoo == numTriggerLegendary, "Unsufficient amountGobblers");
+        uint256 balanceGobblers = gobblers.balanceOf(dao);
         // =================================
         // Transfer GOO and NFTs to this contract
         // =================================
@@ -99,7 +108,7 @@ contract MintLegendary is Owned, ERC721TokenReceiver {
         for (uint8 i = 0; i < newGobblers.length; ++i)
             gobblers.transferFrom(address(this), dao, newGobblers[i]);
         // final check
-        require(gobblers.balanceOf(dao) == startingBalance - nextLegendaryPrice + newGobblers.length + 1, "Something wrong");
+        require(gobblers.balanceOf(dao) == balanceGobblers - nextLegendaryPrice + newGobblers.length + 1, "Something wrong");
     }
 
     // @notice Update legendary price to reuse this contract
