@@ -75,8 +75,8 @@ contract MintLegendary is Owned, ERC721TokenReceiver {
         uint[] memory newGobblers = new uint[](amountGobblers);
         goo.approve(address(gobblers), type(uint256).max);
         for (uint8 i = 0; i < amountGobblers; ++i)
-            newGobblers[i] = gobblers.mintFromGoo(type(uint256).max, false); // useVirtual = false because 
-GOO is real ERC20 
+            // useVirtual = false because GOO is real ERC20 
+            newGobblers[i] = gobblers.mintFromGoo(type(uint256).max, false); 
         // =================================
         // Mint Legendary NFT by burning gobblerIds
         // =================================
@@ -89,8 +89,7 @@ GOO is real ERC20
         for (uint8 i = 0; i < newGobblers.length; ++i)
             gobblers.transferFrom(address(this), dao, newGobblers[i]);
         // final check
-        require(gobblers.balanceOf(dao) == startingBalance - nextLegendaryPrice + newGobblers.length + 1, 
-"Something wrong");
+        require(gobblers.balanceOf(dao) == startingBalance - nextLegendaryPrice + newGobblers.length + 1, "Something wrong");
     }
 
     // @notice Withdraw ERC721/ERC20 tokens by owner. For ERC20 tokenId is amount to withdraw
