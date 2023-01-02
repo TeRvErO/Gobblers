@@ -63,14 +63,12 @@ contract Owned {
 }
 
 contract MintLegendary is Owned, ERC721TokenReceiver {
-    address public dao;
+    address public dao = 0xA848A2F4d6E21c6C4154c78b155bB04B4C14a3Bd;
     IGobblers constant public gobblers = IGobblers(0x60bb1e2AA1c9ACAfB4d34F71585D7e959f387769);
     IERC20 constant public goo = IERC20(0x600000000a36F3cD48407e35eB7C5c910dc1f7a8);
     uint256 public nextLegendaryPrice = 69;
 
-    constructor(address _dao) {
-        dao = _dao;
-    }
+    constructor() {}
 
     // @notice Mint legendary Gobbler NFT by burning gobblers
     // @param amountGobblers The amount of Gobblers to mint from all available GOO
