@@ -29,6 +29,7 @@ interface IGobblers {
     function mintLegendaryGobbler(uint256[] calldata gobblerIds) external returns (uint);
     function gooBalance(address user) view external returns(uint256);
     function transferFrom(address, address, uint256) external;
+    function transfer(address, uint256) external;
     function setApprovalForAll(address operator, bool _approved) external;
     function balanceOf(address) external view returns (uint);
     function mintStart() external view returns (uint256);
@@ -102,7 +103,7 @@ contract MintLegendary is Owned, ERC721TokenReceiver {
         // Withdraw result: Legendary NFT, remaining GOO and new Gobblers
         // =================================
         gobblers.transferFrom(address(this), dao, idLegendary);
-        goo.transferFrom(address(this), dao, goo.balanceOf(address(this)));
+        goo.transfer(dao, goo.balanceOf(address(this)));
         for (uint8 i = 0; i < newGobblers.length; ++i)
             gobblers.transferFrom(address(this), dao, newGobblers[i]);
         // final check
