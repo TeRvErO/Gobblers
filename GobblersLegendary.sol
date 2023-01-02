@@ -18,6 +18,7 @@ interface IERC20 {
     function balanceOf(address) external view returns (uint);
     function approve(address, uint256) external;
     function transferFrom(address, address, uint256) external;
+    function transfer(address, uint256) external;
 }
 
 interface IGobblers {
@@ -29,7 +30,6 @@ interface IGobblers {
     function mintLegendaryGobbler(uint256[] calldata gobblerIds) external returns (uint);
     function gooBalance(address user) view external returns(uint256);
     function transferFrom(address, address, uint256) external;
-    function transfer(address, uint256) external;
     function setApprovalForAll(address operator, bool _approved) external;
     function balanceOf(address) external view returns (uint);
     function mintStart() external view returns (uint256);
